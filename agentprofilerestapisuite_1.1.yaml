@@ -1,0 +1,38 @@
+---
+product: "1.0.0"
+info:
+  name: "agentprofilerestapisuite"
+  title: "AgentProfileRESTAPISuite"
+  version: "1.1"
+visibility:
+  view:
+    enabled: true
+    type: "public"
+    tags: []
+    orgs: []
+  subscribe:
+    enabled: true
+    type: "authenticated"
+    tags: []
+    orgs: []
+apis:
+  agentprofile-api-suite:
+    $ref: "agentprofile-api-suite_1.1.yaml"
+  agentprofileservice:
+    $ref: "agentprofileservice_1.1.yaml"
+plans:
+  new-plan-1:
+    title: "New Plan 1"
+    approval: true
+    apis: {}
+    rate-limits:
+      rate-limit-1:
+        hard-limit: true
+        value: "10000/1day"
+  default:
+    title: "Default Plan"
+    description: "Default Plan"
+    approval: false
+    rate-limit:
+      hard-limit: false
+      value: "100/hour"

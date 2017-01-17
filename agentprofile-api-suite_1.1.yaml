@@ -1,0 +1,424 @@
+---
+swagger: "2.0"
+info:
+  title: "AgentProfile API suite"
+  description: "create/update/read/delete Agent profile"
+  version: "1.1"
+  x-ibm-name: "agentprofile-api-suite"
+host: "api.us.apiconnect.ibmcloud.com"
+schemes:
+- "https"
+basePath: "/"
+produces:
+- "application/json"
+paths:
+  /agentprofile:
+    get:
+      summary: "Retrieves agent profile information based on agentId"
+      description: "The API retrieves agent profile information based on agentId.\n"
+      parameters:
+      - name: "agentId"
+        in: "query"
+        required: true
+        type: "string"
+      tags:
+      - "getAgentProfile"
+      responses:
+        200:
+          description: "Returns agent Profile"
+          schema:
+            type: "object"
+            properties:
+              response:
+                $ref: "#/definitions/getresponse"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Fault"
+    post:
+      summary: "Creates agent profile"
+      description: "Create agent profile.\n"
+      parameters:
+      - name: "request"
+        in: "body"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            request:
+              $ref: "#/definitions/postrequest"
+      tags:
+      - "createAgentProfile"
+      responses:
+        200:
+          description: "returns agentId created."
+          schema:
+            type: "object"
+            properties:
+              response:
+                $ref: "#/definitions/postresponse"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Fault"
+    put:
+      summary: "Updates agent profile"
+      description: "Updates agent profile.\n"
+      parameters:
+      - name: "request"
+        in: "body"
+        required: true
+        schema:
+          type: "object"
+          properties:
+            request:
+              $ref: "#/definitions/putrequest"
+      tags:
+      - "updateAgentProfile"
+      responses:
+        200:
+          description: "returns phoneNumber  updated."
+          schema:
+            type: "object"
+            properties:
+              response:
+                $ref: "#/definitions/putresponse"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Fault"
+    delete:
+      description: "The API removes agentProfile from the system of records\n"
+      parameters:
+      - name: "agentId"
+        in: "query"
+        required: true
+        type: "string"
+      tags:
+      - "deleteAgentProfile"
+      responses:
+        200:
+          description: "Returns status whether the externalRefId related details are\
+            \ deleted or not"
+          schema:
+            type: "object"
+            properties:
+              response:
+                $ref: "#/definitions/deleteresponse"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Fault"
+    parameters:
+    - name: "agentId"
+      type: "string"
+      required: true
+      in: "query"
+definitions:
+  getresponse:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+      agentId:
+        type: "string"
+      agentName:
+        type: "string"
+      ssn:
+        type: "string"
+      address:
+        type: "string"
+      phoneNumber:
+        type: "string"
+  postrequest:
+    type: "object"
+    properties:
+      agentName:
+        type: "string"
+      ssn:
+        type: "string"
+      address:
+        type: "string"
+      phoneNumber:
+        type: "string"
+  postresponse:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+      agentId:
+        type: "string"
+  putrequest:
+    type: "object"
+    properties:
+      agentId:
+        type: "string"
+      phoneNumber:
+        type: "string"
+  putresponse:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+      agentId:
+        type: "string"
+  deleteresponse:
+    type: "object"
+    properties:
+      status:
+        type: "string"
+      agentId:
+        type: "string"
+  Fault:
+    type: "object"
+    properties:
+      faultcode:
+        type: "string"
+      faultstring:
+        type: "string"
+      ErrorInfo:
+        type: "object"
+        properties:
+          errorMessageType:
+            type: "string"
+          errorCode:
+            type: "integer"
+          errorMessageText:
+            type: "string"
+          errorState:
+            type: "string"
+x-ibm-configuration:
+  enforced: true
+  testable: true
+  phase: "realized"
+  cors:
+    enabled: true
+  assembly:
+    execute:
+    - operation-switch:
+        title: "operation-switch"
+        case:
+        - operations:
+          - verb: "get"
+            path: "/agentprofile"
+          execute:
+          - if:
+              title: "if"
+              condition: "request.parameters.agentId === ''"
+              execute:
+              - throw:
+                  title: "throw"
+                  name: "InvalidAgentId"
+                  message: "Invalid input parameters : agentId"
+          - xslt:
+              title: "request_transform_SOAP"
+              input: false
+              source: "<xsl:stylesheet\r\n        xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\
+                \r\n        xmlns:dp=\"http://www.datapower.com/extensions\"\r\n \
+                \       exclude-result-prefixes=\"dp\" extension-element-prefixes=\"\
+                dp\"\r\n        version=\"1.0\">\r\n      <xsl:template match=\"/\"\
+                >\r\n        <soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\
+                \ xmlns:agen=\"http://www.examples.com/wsdl/AgentProfile.wsdl\">\r\
+                \n           <soapenv:Header/>\r\n           <soapenv:Body>\r\n  \
+                \            <agen:getAgentProfileRequest>\r\n                 <agentId><xsl:value-of\
+                \ select=\"substring-after(dp:variable('var://service/URI'),'=')\"\
+                /></agentId>\r\n              </agen:getAgentProfileRequest>\r\n \
+                \          </soapenv:Body>\r\n        </soapenv:Envelope>\r\n    \
+                \    <dp:set-http-request-header name=\"'clientId'\" value=\"'8d51c031-ebb4-434c-8e2c-0ed1ff51f6b2'\"\
+                />\r\n        <dp:set-http-request-header name=\"'Content-Type'\"\
+                \ value=\"'text/xml'\"/>\r\n      </xsl:template>\r\n    </xsl:stylesheet>"
+          - activity-log:
+              title: "activity-log"
+              content: "activity"
+              error-content: "payload"
+          - set-variable:
+              title: "set-variable"
+              actions:
+              - value: "application/xml"
+                add: "request.headers.content-type"
+          - invoke:
+              title: "invoke_getAgentProfile"
+              timeout: 59
+              verb: "POST"
+              cache-response: "time-to-live"
+              cache-ttl: 900
+              target-url: "https://api.us.apiconnect.ibmcloud.com//vmnandurigmailcom-ecentralspace/AgentProfileService/getAgentProfile"
+              stop-on-error:
+              - "ConnectionError"
+              - "SOAPError"
+              - "OperationError"
+          - gatewayscript:
+              title: "response_transform_JSON"
+              source: "var doc=apim.getvariable('message.body');\nvar docElement =\
+                \ doc.item(0);\nvar body=docElement.childNodes.item(1);\nvar requestEelement=\
+                \ body.childNodes.item(0);\nvar status = requestEelement.childNodes.item(0).textContent;\n\
+                var agentId = requestEelement.childNodes.item(1).textContent;\nvar\
+                \ agentName = requestEelement.childNodes.item(2).textContent;\nvar\
+                \ ssn = requestEelement.childNodes.item(3).textContent;\nvar address\
+                \ = requestEelement.childNodes.item(4).textContent;\nvar phoneNumber\
+                \ = requestEelement.childNodes.item(5).textContent;\nvar response\
+                \ = {};\nresponse.response={};\nresponse.response.status=status;\n\
+                response.response.agentId=agentId;\nresponse.response.agentName=agentName;\n\
+                response.response.ssn=ssn;\nresponse.response.phoneNumber=phoneNumber;\n\
+                apim.setvariable('message.headers.Content-Type','application/json');\n\
+                apim.setvariable('message.body',response);"
+          - if:
+              title: "if"
+              condition: "request.headers.Accept === 'application/xml'"
+              execute:
+              - json-to-xml:
+                  title: "convert json response to XML"
+                  root-element-name: "json"
+                  always-output-root-element: false
+        - operations:
+          - verb: "post"
+            path: "/agentprofile"
+          execute:
+          - validate:
+              title: "validateCreateReq"
+              definition: "#/definitions/postrequest"
+          - json-to-xml:
+              title: "json-to-xml"
+              root-element-name: "json"
+              always-output-root-element: false
+          - xslt:
+              title: "XMLtoSOAP"
+              input: true
+              source: "<xsl:stylesheet\r\n        xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\
+                \r\n        xmlns:dp=\"http://www.datapower.com/extensions\"\r\n \
+                \       exclude-result-prefixes=\"dp\" extension-element-prefixes=\"\
+                dp\" \r\n        version=\"1.0\">\r\n      <xsl:template match=\"\
+                /\">\r\n        \t<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\
+                \ xmlns:agen=\"http://www.examples.com/wsdl/AgentProfile.wsdl\">\r\
+                \n        \t   <soapenv:Header/>\r\n        \t   <soapenv:Body>\r\n\
+                \        \t      <agen:createAgentProfileRequest>\r\n        \t  \
+                \       <agentName><xsl:value-of select=\"*/agentName\"/></agentName>\r\
+                \n        \t         <ssn><xsl:value-of select=\"*/ssn\"/></ssn>\r\
+                \n        \t         <address><xsl:value-of select=\"*/address\"/></address>\r\
+                \n        \t         <phoneNumber><xsl:value-of select=\"*/phoneNumber\"\
+                /></phoneNumber>\r\n        \t      </agen:createAgentProfileRequest>\r\
+                \n        \t   </soapenv:Body>\r\n        \t</soapenv:Envelope>\r\n\
+                \         <dp:set-http-request-header name=\"'SOAPAction'\" value=\"\
+                '&quot;getAgentProfile&quot;'\"/>\r\n         <dp:set-http-request-header\
+                \ name=\"'Content-Type'\" value=\"'applicaiton/xml'\"/>\r\n      \
+                \   <dp:set-variable name=\"'var://service/protocol-method'\" value=\"\
+                'POST'\"/>\r\n      </xsl:template>\r\n    </xsl:stylesheet>"
+          - invoke:
+              title: "invoke_createAgentProfile"
+              timeout: 60
+              verb: "POST"
+              cache-response: "protocol"
+              cache-ttl: 900
+              target-url: "https://api.us.apiconnect.ibmcloud.com/vmnandurigmailcom-ecentralspace/AgentProfileService/createAgentProfile"
+          - xslt:
+              title: "response_transform"
+              input: true
+              source: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<xsl:stylesheet\
+                \ version=\"1.0\"\r\n  xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\
+                \r\n  xmlns:dp=\"http://www.datapower.com/extensions\"\r\n  xmlns:func=\"\
+                http://exslt.org/functions\"\r\n  xmlns:apim=\"http://www.ibm.com/apimanagement\"\
+                \ extension-element-prefixes=\"dp func apim\">\r\n\r\n  <!-- Contains\
+                \ the APIM functions -->\r\n  <xsl:import href=\"local:///isp/policy/apim.custom.xsl\"\
+                \ />\r\n\r\n  <xsl:template match=\"/\">\r\n   <response>\r\n    <status><xsl:value-of\
+                \ select=\"//status\"/></status>\r\n     <agentId><xsl:value-of select=\"\
+                //agentId\"/></agentId>\r\n    </response>  \r\n  </xsl:template>\r\
+                \n\r\n</xsl:stylesheet>"
+          - xml-to-json:
+              title: "xml-to-json"
+        - operations:
+          - verb: "put"
+            path: "/agentprofile"
+          execute:
+          - validate:
+              title: "validateUpdateReq"
+              definition: "#/definitions/putrequest"
+          - json-to-xml:
+              title: "json-to-xml"
+              root-element-name: "json"
+              always-output-root-element: false
+          - xslt:
+              title: "XMLtoSOAP"
+              input: true
+              source: "<xsl:stylesheet\r\n        xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\
+                \r\n        xmlns:dp=\"http://www.datapower.com/extensions\"\r\n \
+                \       exclude-result-prefixes=\"dp\"  extension-element-prefixes=\"\
+                dp\"\r\n        version=\"1.0\">\r\n      <xsl:template match=\"/\"\
+                >\r\n       <soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\
+                \ xmlns:agen=\"http://www.examples.com/wsdl/AgentProfile.wsdl\">\r\
+                \n           <soapenv:Header/>\r\n           <soapenv:Body>\r\n  \
+                \            <agen:updateAgentProfileRequest>\r\n                \
+                \ <agentId><xsl:value-of select=\"*/agentId\"/></agentId>\r\n    \
+                \             <phoneNumber><xsl:value-of select=\"*/phoneNumber\"\
+                /></phoneNumber>\r\n              </agen:updateAgentProfileRequest>\r\
+                \n           </soapenv:Body>\r\n        </soapenv:Envelope>\r\n  \
+                \      <dp:set-http-request-header name=\"'Content-Type'\" value=\"\
+                'applicaiton/xml'\"/>\r\n      </xsl:template>\r\n    </xsl:stylesheet>"
+          - invoke:
+              title: "invoke_updateAgentProfile"
+              timeout: 60
+              verb: "POST"
+              cache-response: "protocol"
+              cache-ttl: 900
+              target-url: "https://api.us.apiconnect.ibmcloud.com//vmnandurigmailcom-ecentralspace/AgentProfileService/updateAgentProfile"
+          - xslt:
+              title: "response_transform"
+              input: true
+              source: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<xsl:stylesheet\
+                \ version=\"1.0\"\r\n  xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\
+                \r\n  xmlns:dp=\"http://www.datapower.com/extensions\"\r\n  xmlns:func=\"\
+                http://exslt.org/functions\"\r\n  xmlns:apim=\"http://www.ibm.com/apimanagement\"\
+                \ extension-element-prefixes=\"dp func apim\">\r\n\r\n  <!-- Contains\
+                \ the APIM functions -->\r\n  <xsl:import href=\"local:///isp/policy/apim.custom.xsl\"\
+                \ />\r\n<xsl:output method=\"xml\" version=\"1.0\"\r\nencoding=\"\
+                UTF-8\" indent=\"yes\"/>\r\n  <xsl:template match=\"/\">\r\n   <response>\r\
+                \n            <status><xsl:value-of select=\"//status\"/></status>\r\
+                \n             <agentId><xsl:value-of select=\"//agentId\"/></agentId>\r\
+                \n            \r\n             <phoneNumber><xsl:value-of select=\"\
+                //phoneNumber\"/></phoneNumber>\r\n        </response>  \r\n  </xsl:template>\r\
+                \n\r\n</xsl:stylesheet>"
+          - xml-to-json:
+              title: "xml-to-json"
+        - operations:
+          - verb: "delete"
+            path: "/agentprofile"
+          execute:
+          - xslt:
+              title: "request_transform"
+              input: false
+              source: "<xsl:stylesheet\r\n        xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\
+                \r\n        xmlns:dp=\"http://www.datapower.com/extensions\"\r\n \
+                \       exclude-result-prefixes=\"dp\"  extension-element-prefixes=\"\
+                dp\"\r\n        version=\"1.0\">\r\n      <xsl:template match=\"/\"\
+                >\r\n        <soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\
+                \ xmlns:agen=\"http://www.examples.com/wsdl/AgentProfile.wsdl\">\r\
+                \n           <soapenv:Header/>\r\n           <soapenv:Body>\r\n  \
+                \            <agen:removeAgentProfileRequest>\r\n                \
+                \ <agentId><xsl:value-of select=\"substring-after(dp:variable('var://service/URI'),'=')\"\
+                /></agentId>\r\n              </agen:removeAgentProfileRequest>\r\n\
+                \           </soapenv:Body>\r\n        </soapenv:Envelope>\r\n   \
+                \      <dp:set-http-request-header name=\"'Content-Type'\" value=\"\
+                'text/xml'\"/>\r\n      </xsl:template>\r\n    </xsl:stylesheet>"
+          - invoke:
+              title: "invoke_removeAgentProfile"
+              timeout: 60
+              verb: "POST"
+              cache-response: "protocol"
+              cache-ttl: 900
+              target-url: "https://api.us.apiconnect.ibmcloud.com//vmnandurigmailcom-ecentralspace/AgentProfileService/removeAgentProfile"
+          - xslt:
+              title: "xslt"
+              input: true
+              source: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<xsl:stylesheet\
+                \ version=\"1.0\"\r\n  xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\"\
+                \r\n  xmlns:dp=\"http://www.datapower.com/extensions\"\r\n  xmlns:func=\"\
+                http://exslt.org/functions\"\r\n  xmlns:apim=\"http://www.ibm.com/apimanagement\"\
+                \ extension-element-prefixes=\"dp func apim\">\r\n\r\n  <!-- Contains\
+                \ the APIM functions -->\r\n  <xsl:import href=\"local:///isp/policy/apim.custom.xsl\"\
+                \ />\r\n<xsl:output method=\"xml\" version=\"1.0\"\r\nencoding=\"\
+                UTF-8\" indent=\"yes\"/>\r\n  <xsl:template match=\"/\">\r\n   <response>\r\
+                \n            <status><xsl:value-of select=\"//status\"/></status>\r\
+                \n        </response>  \r\n  </xsl:template>\r\n\r\n</xsl:stylesheet>"
+          - xml-to-json:
+              title: "xml-to-json"
+    catch: []
+  gateway: "datapower-gateway"
